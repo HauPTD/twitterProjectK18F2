@@ -26,4 +26,5 @@ body:{
 }
 */
 usersRoute.post('/register', registerValidator, wrapAsync(registerController))
+
 export default usersRoute

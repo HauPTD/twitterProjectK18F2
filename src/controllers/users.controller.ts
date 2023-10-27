@@ -5,6 +5,7 @@ import userService from '~/services/users.services'
 import { ParamsDictionary } from 'express-serve-static-core'
 import { RegisterReqBody } from '~/models/requests/User.requests'
 import { ObjectId } from 'mongodb'
+import { USERS_MESSAGES } from '~/constants/message'
 
 export const loginController = async (req: Request, res: Response) => {
   const user = req.user as User // lấy user từ req
@@ -14,7 +15,7 @@ export const loginController = async (req: Request, res: Response) => {
   //là objectid trên mongodb, nên phải toString()
   //trả ra kết quả, thiếu cái này là sending hoài luôn
   return res.json({
-    message: 'Login successfully',
+    message: USERS_MESSAGES.LOGIN_SUCCESS,
     result: result
   })
 }
@@ -27,7 +28,7 @@ export const registerController = async (
   //tạo 1 user mới và bỏ vào collection users trong database
   const result = await userService.register(req.body)
   return res.status(201).json({
-    message: 'register successfully',
+    message: USERS_MESSAGES.LOGIN_SUCCESS,
     result
   })
 }
