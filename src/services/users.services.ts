@@ -20,6 +20,11 @@ class UserService {
       options: { expiresIn: process.env.REFRESH_TOKEN_EXPIRE_IN }
     })
   }
+  //hàm ký access_token và refresh_token
+  private signAccessAndRefreshToken(user_id: string) {
+    return Promise.all([this.signAccessToken(user_id), this.signRefreshToken(user_id)])
+  }
+
   async checkEmailExist(email: string) {
     const user = await databaseService.users.findOne({ email })
     return Boolean(user)
@@ -34,10 +39,17 @@ class UserService {
       })
     )
     const user_id = result.insertedId.toString()
-    const [accessToken, refreshToken] = await Promise.all([
-      this.signAccessToken(user_id),
-      this.signRefreshToken(user_id)
-    ])
+    const [accessToken, refreshToken] = await this.signAccessAndRefreshToken(user_id)
+    //lưu refresh_token vào db
+
+    return { accessToken, refreshToken }
+  }
+
+  async login(user_id: string) {
+    //dùng user_id để tạo access_token và refresh_token
+    const [accessToken, refreshToken] = await this.signAccessAndRefreshToken(user_id)
+    //lưu refresh_token vào db
+
     return { accessToken, refreshToken }
   }
 }
