@@ -5,6 +5,7 @@ import userService from '~/services/users.services'
 import { ParamsDictionary } from 'express-serve-static-core'
 import {
   EmialVerifyReqBody,
+  ForgotpasswordReqBody,
   LoginReqBody,
   LogoutReqBody,
   RegisterReqBody,
@@ -13,6 +14,7 @@ import {
 import { ObjectId } from 'mongodb'
 import { USERS_MESSAGES } from '~/constants/message'
 import HTTP_STATUS from '~/constants/httpStatus'
+import { UserVerifyStatus } from '~/constants/enums'
 
 export const loginController = async (req: Request<ParamsDictionary, any, LoginReqBody>, res: Response) => {
   const user = req.user as User // lấy user từ req
@@ -70,5 +72,46 @@ export const emailVerifyController = async (req: Request<ParamsDictionary, any, 
   return res.json({
     message: USERS_MESSAGES.EMAIL_VERIFY_SUCCESS,
     result
+  })
+}
+
+export const resendEmailVerifyController = async (req: Request, res: Response) => {
+  //nếu qua được hàm này tức là đã qua được accessTokenValidator
+  //req đã có decoded_authorization
+  const { user_id } = req.decoded_authorization as TokenPayload
+  //tìm user có user_id này
+  const user = await databaseService.users.findOne({ _id: new ObjectId(user_id) })
+  //nếu k có user thì res lỗi
+  if (user === null) {
+    return res.status(HTTP_STATUS.NOT_FOUND).json({
+      message: USERS_MESSAGES.USER_NOT_FOUND
+    })
+  }
+  //nếu có thì xem thử nó đã verify chưa
+  if (user.verify == UserVerifyStatus.Verified) {
+    return res.json({
+      message: USERS_MESSAGES.EMAIL_ALREADY_VERIFIED_BEFORE
+    })
+  }
+  //nếu xuống được đây nghĩa là user này chưa verify, và bị mất email_verify_token
+  //tiến hành tọa mới emial_verify_token và lưu database
+  const result = await userService.resendEmailVerify(user_id)
+  return res.json(result)
+}
+export const forgotPasswordController = async (
+  req: Request<ParamsDictionary, any, ForgotpasswordReqBody>,
+  res: Response,
+  next: NextFunction
+) => {
+  //middleware forgotPasswordValidator đã chạy rồi, nên ta có thể lấy _id từ user đã tìm đc bằng email
+  const { _id } = req.user as User
+  //cái _id này là objectid, nên ta phải chuyển nó về string
+  //chứ không truyền trực tiếp vào hàm forgotPassword
+  const result = await userService.forgotPassword((_id as ObjectId).toString())
+  return res.json(result)
+}
+export const verifyForgotPasswordTokenController = async (req: Request, res: Response) => {
+  res.json({
+    message: USERS_MESSAGES.VERIFY_FORGOT_PASSWORD_TOKEN_SUCCESS
   })
 }
