@@ -1,5 +1,5 @@
 import express, { NextFunction, Response, Request } from 'express'
-import usersRoute from './routes/users.routes'
+import usersRouter from './routes/users.routes'
 import databaseService from './services/database.services'
 import { defaultErrorHandler } from './middlewares/error.middlewares'
 
@@ -14,7 +14,7 @@ app.get('/', (req, res) => {
   res.send('Hello World!')
 })
 
-app.use('/users', usersRoute)
+app.use('/users', usersRouter)
 //localhost:3000/users/register
 
 //app sử dụng một error handler tổng

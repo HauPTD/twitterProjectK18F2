@@ -3,6 +3,7 @@ import { register, wrap } from 'module'
 import {
   emailVerifyController,
   forgotPasswordController,
+  getMeController,
   loginController,
   logoutController,
   registerController,
@@ -21,7 +22,7 @@ import {
   verifyForgotPasswordTokenValidator
 } from '~/middlewares/users.middlewares'
 import { wrapAsync } from '~/utils/handlers'
-const usersRoute = Router()
+const usersRouter = Router()
 
 /*
 des: đăng nhập
@@ -29,7 +30,7 @@ path: /users/login
 method: POST
 body: {email, password}
 */
-usersRoute.get('/login', loginValidator, wrapAsync(loginController))
+usersRouter.get('/login', loginValidator, wrapAsync(loginController))
 
 /* 
 Description: Register new user
@@ -43,7 +44,7 @@ body:{
     date_of_birth: string theo chuẩn ISO 8601
 }
 */
-usersRoute.post('/register', registerValidator, wrapAsync(registerController))
+usersRouter.post('/register', registerValidator, wrapAsync(registerController))
 
 /*
 des: đăng xuất
@@ -52,7 +53,7 @@ method: POST
 headers: {Authorization: 'Bearer <access_token>'}
 body:{refresg_token: string}
 */
-usersRoute.post('/logout', accessTokenValidator, refreshTokenValidator, wrapAsync(logoutController))
+usersRouter.post('/logout', accessTokenValidator, refreshTokenValidator, wrapAsync(logoutController))
 
 /*
 des: verify email
@@ -63,14 +64,14 @@ method: POST
 path: /users/verify_email
 body: {emial_verify_token: string}
 */
-usersRoute.post('/verify-email', emailVerifyValidator, wrapAsync(emailVerifyController))
+usersRouter.post('/verify-email', emailVerifyValidator, wrapAsync(emailVerifyController))
 
 /*
 des: resend emial verify
 method: POST
 headers: {Authorization, Bearer <access_token>}
 */
-usersRoute.post('/resend-email-verify', accessTokenValidator, wrapAsync(resendEmailVerifyController))
+usersRouter.post('/resend-email-verify', accessTokenValidator, wrapAsync(resendEmailVerifyController))
 
 /*
 des: forgot password
@@ -81,7 +82,7 @@ method: POST
 path: /user/forgot-password
 body: {emial: string}
 */
-usersRoute.post('/forgot-password', forgotPasswordValidator, wrapAsync(forgotPasswordController))
+usersRouter.post('/forgot-password', forgotPasswordValidator, wrapAsync(forgotPasswordController))
 
 /*
 des: verify forgot password token
@@ -93,7 +94,7 @@ method: POST
 path: /users/verify-forgot-password-token
 body: {forgot_password_token: string}
 */
-usersRoute.post(
+usersRouter.post(
   '/verify-forgot-password',
   verifyForgotPasswordTokenValidator,
   wrapAsync(verifyForgotPasswordTokenController)
@@ -106,10 +107,20 @@ method: POST
 Header: không cần, vì  ngta quên mật khẩu rồi, thì sao mà đăng nhập để có authen đc
 body: {forgot_password_token: string, password: string, confirm_password: string}
 */
-usersRoute.post(
+usersRouter.post(
   '/reset-password',
   resetPasswordValidator,
   verifyForgotPasswordTokenValidator,
   wrapAsync(resetPasswordController)
 )
-export default usersRoute
+
+/*
+des: get profile của user
+path: '/me'
+method: get
+Header: {Authorization: Bearer <access_token>}
+body: {}
+*/
+usersRouter.get('/me', accessTokenValidator, wrapAsync(getMeController))
+
+export default usersRouter
