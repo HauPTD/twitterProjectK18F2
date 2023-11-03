@@ -9,6 +9,7 @@ import {
   LoginReqBody,
   LogoutReqBody,
   RegisterReqBody,
+  RequestPasswordReqBody,
   TokenPayload
 } from '~/models/requests/User.requests'
 import { ObjectId } from 'mongodb'
@@ -48,6 +49,7 @@ export const logoutController = async (req: Request<ParamsDictionary, any, Logou
   const result = await userService.logout(refresh_token)
   res.json(result)
 }
+
 export const emailVerifyController = async (req: Request<ParamsDictionary, any, EmialVerifyReqBody>, res: Response) => {
   //khi mà req vào được đây nghĩa là emial_verify_token đã valid
   //đồng thời trong req sẽ có decoded_email_verify_token
@@ -98,6 +100,7 @@ export const resendEmailVerifyController = async (req: Request, res: Response) =
   const result = await userService.resendEmailVerify(user_id)
   return res.json(result)
 }
+
 export const forgotPasswordController = async (
   req: Request<ParamsDictionary, any, ForgotpasswordReqBody>,
   res: Response,
@@ -110,8 +113,21 @@ export const forgotPasswordController = async (
   const result = await userService.forgotPassword((_id as ObjectId).toString())
   return res.json(result)
 }
+
 export const verifyForgotPasswordTokenController = async (req: Request, res: Response) => {
   res.json({
     message: USERS_MESSAGES.VERIFY_FORGOT_PASSWORD_TOKEN_SUCCESS
   })
+}
+
+export const resetPasswordController = async (
+  req: Request<ParamsDictionary, any, RequestPasswordReqBody>,
+  res: Response
+) => {
+  //muốn đổi mk thì cần user_id và password mới
+  const { user_id } = req.decoded_forgot_password_token as TokenPayload
+  const { password } = req.body
+  //cập nhật
+  const result = await userService.reserPassword({ user_id, password })
+  return res.json(result)
 }
