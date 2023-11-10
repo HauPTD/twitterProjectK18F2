@@ -1,27 +1,34 @@
 import express, { Router } from 'express'
 import { register, wrap } from 'module'
 import {
+  changePasswordController,
   emailVerifyController,
+  followController,
   forgotPasswordController,
   getMeController,
   getProfileController,
   loginController,
   logoutController,
+  refreshTokenController,
   registerController,
   resendEmailVerifyController,
   resetPasswordController,
+  unfollowController,
   updateMeController,
   verifyForgotPasswordTokenController
 } from '~/controllers/users.controller'
 import { filterMiddleware } from '~/middlewares/common.middlewares'
 import {
   accessTokenValidator,
+  changePasswordValidator,
   emailVerifyValidator,
+  followValidator,
   forgotPasswordValidator,
   loginValidator,
   refreshTokenValidator,
   registerValidator,
   resetPasswordValidator,
+  unfollowValidator,
   updateMeValidator,
   verifiedUserValidator,
   verifyForgotPasswordTokenValidator
@@ -36,7 +43,7 @@ path: /users/login
 method: POST
 body: {email, password}
 */
-usersRouter.get('/login', loginValidator, wrapAsync(loginController))
+usersRouter.post('/login', loginValidator, wrapAsync(loginController))
 
 /* 
 Description: Register new user
@@ -154,4 +161,55 @@ method: get
 không cần header vì, chưa đăng nhập cũng có thể xem
 */
 usersRouter.get('/:username', wrapAsync(getProfileController))
+
+/*
+des: Follow someone
+path: '/follow'
+method: post
+headers: {Authorization: Bearer <access_token>}
+body: {followed_user_id: string}
+*/
+usersRouter.post('/follow', accessTokenValidator, verifiedUserValidator, followValidator, wrapAsync(followController))
+// 13: 654ce473bbaf5daf84b34289
+// 14: 654ce4c2bbaf5daf84b3428d
+
+/*
+    des: unfollow someone
+    path: '/follow/:user_id'
+    method: delete
+    headers: {Authorization: Bearer <access_token>}
+  g}
+    */
+usersRouter.delete(
+  '/unfollow/:user_id',
+  accessTokenValidator,
+  verifiedUserValidator,
+  unfollowValidator,
+  wrapAsync(unfollowController)
+)
+
+/*
+  des: change password
+  path: '/change-password'
+  method: PUT
+  headers: {Authorization: Bearer <access_token>}
+  Body: {old_password: string, password: string, confirm_password: string}
+g}
+  */
+usersRouter.put(
+  '/change-password',
+  accessTokenValidator,
+  verifiedUserValidator,
+  changePasswordValidator,
+  wrapAsync(changePasswordController)
+)
+
+/*
+  des: refreshtoken
+  path: '/refresh-token'
+  method: POST
+  Body: {refresh_token: string}
+g}
+  */
+usersRouter.post('/refresh-token', refreshTokenValidator, wrapAsync(refreshTokenController))
 export default usersRouter
